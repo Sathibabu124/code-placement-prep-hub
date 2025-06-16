@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +11,7 @@ import {
   Play, 
   Send, 
   Clock, 
-  Memory, 
+  MemoryStick, 
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -156,7 +155,7 @@ You can return the answer in any order.`,
                 {problem.timeLimit}
               </div>
               <div className="flex items-center text-sm text-gray-500">
-                <Memory className="h-4 w-4 mr-1" />
+                <MemoryStick className="h-4 w-4 mr-1" />
                 {problem.memoryLimit}
               </div>
             </div>
