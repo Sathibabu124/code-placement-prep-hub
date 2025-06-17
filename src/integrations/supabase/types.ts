@@ -9,7 +9,140 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      problems: {
+        Row: {
+          category: string
+          constraints: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string
+          difficulty: string
+          examples: Json | null
+          id: string
+          memory_limit: number | null
+          template_code: Json | null
+          test_cases: Json | null
+          time_limit: number | null
+          title: string
+        }
+        Insert: {
+          category: string
+          constraints?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          difficulty: string
+          examples?: Json | null
+          id?: string
+          memory_limit?: number | null
+          template_code?: Json | null
+          test_cases?: Json | null
+          time_limit?: number | null
+          title: string
+        }
+        Update: {
+          category?: string
+          constraints?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          difficulty?: string
+          examples?: Json | null
+          id?: string
+          memory_limit?: number | null
+          template_code?: Json | null
+          test_cases?: Json | null
+          time_limit?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          department: string | null
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          roll_number: string | null
+          updated_at: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          department?: string | null
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          code: string
+          execution_time: number | null
+          id: string
+          language: string
+          memory_used: number | null
+          problem_id: string | null
+          status: string
+          submitted_at: string | null
+          test_results: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          execution_time?: number | null
+          id?: string
+          language: string
+          memory_used?: number | null
+          problem_id?: string | null
+          status: string
+          submitted_at?: string | null
+          test_results?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          execution_time?: number | null
+          id?: string
+          language?: string
+          memory_used?: number | null
+          problem_id?: string | null
+          status?: string
+          submitted_at?: string | null
+          test_results?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +151,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +266,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "student"],
+    },
   },
 } as const

@@ -18,6 +18,8 @@ import {
   AlertCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCodeExecution } from "@/hooks/useCodeExecution";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const ProblemDetail = () => {
   const { id } = useParams();
@@ -33,6 +35,8 @@ function twoSum(nums, target) {
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResults, setTestResults] = useState<any[]>([]);
+  const { executeCode, submitSolution, isExecuting } = useCodeExecution();
+  const { user, profile } = useAuth();
 
   // Mock problem data
   const problem = {
@@ -87,6 +91,106 @@ You can return the answer in any order.`,
       case "Medium": return "bg-yellow-100 text-yellow-800";
       case "Hard": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const handleRun = async () => {
+    if (!code.trim()) {
+      toast({
+        title: "No code to run",
+        description: "Please write some code first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRunning(true);
+    setTestResults([]);
+
+    try {
+      const testCases = problem.testCases
+        .filter(tc => !tc.isHidden)
+        .map(tc => ({
+          input: tc.input,
+          expectedOutput: tc.expectedOutput
+        }));
+
+      const result = await executeCode(code, selectedLanguage, testCases);
+
+      if (result.status === 'accepted') {
+        const mockResults = result.testResults?.map((testResult, index) => ({
+          status: testResult.passed ? "Passed" : "Failed",
+          input: testResult.input,
+          output: testResult.actualOutput,
+          expected: testResult.expectedOutput,
+          time: `${Math.floor(Math.random() * 50) + 10}ms`
+        })) || [];
+
+        setTestResults(mockResults);
+        toast({
+          title: "Code executed successfully",
+          description: `${mockResults.filter(r => r.status === "Passed").length}/${mockResults.length} test cases passed!`,
+        });
+      } else {
+        toast({
+          title: "Execution failed",
+          description: result.error || `Status: ${result.status}`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Execution error",
+        description: "An error occurred while running your code.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to submit solutions.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const allTestCases = problem.testCases.map(tc => ({
+        input: tc.input,
+        expectedOutput: tc.expectedOutput
+      }));
+
+      const result = await executeCode(code, selectedLanguage, allTestCases);
+      const submissionResult = await submitSolution(problem.id.toString(), code, selectedLanguage, result);
+
+      if (submissionResult.success && result.status === 'accepted') {
+        toast({
+          title: "Submission Successful",
+          description: "Your solution passed all test cases!",
+        });
+        navigate('/student/dashboard');
+      } else {
+        toast({
+          title: "Submission Failed",
+          description: result.error || "Some test cases failed. Please review your solution.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Submission Error",
+        description: "An error occurred while submitting your solution.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -237,15 +341,15 @@ You can return the answer in any order.`,
                   <Button 
                     variant="outline" 
                     onClick={handleRun}
-                    disabled={isRunning}
+                    disabled={isRunning || isExecuting}
                     className="flex-1"
                   >
                     <Play className="h-4 w-4 mr-2" />
-                    {isRunning ? "Running..." : "Run Code"}
+                    {isRunning || isExecuting ? "Running..." : "Run Code"}
                   </Button>
                   <Button 
                     onClick={handleSubmit}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isExecuting}
                     className="flex-1"
                   >
                     <Send className="h-4 w-4 mr-2" />

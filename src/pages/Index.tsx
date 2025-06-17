@@ -1,17 +1,28 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Code, Users, Trophy, BookOpen, ArrowRight, Monitor, Shield } from "lucide-react";
 import LoginModal from "@/components/auth/LoginModal";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [loginModal, setLoginModal] = useState(false);
   const [loginType, setLoginType] = useState<'student' | 'admin'>('student');
 
   const openLogin = (type: 'student' | 'admin') => {
     setLoginType(type);
-    setLoginModal(true);
+    navigate('/auth');
+  };
+
+  const handleDashboardNavigation = () => {
+    if (profile?.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/student/dashboard');
+    }
   };
 
   return (
@@ -25,12 +36,28 @@ const Index = () => {
               <h1 className="text-xl font-bold text-gray-900">CodePrep Platform</h1>
             </div>
             <div className="flex space-x-4">
-              <Button variant="outline" onClick={() => openLogin('student')}>
-                Student Login
-              </Button>
-              <Button onClick={() => openLogin('admin')}>
-                Admin Login
-              </Button>
+              {user ? (
+                <>
+                  <span className="text-gray-600">
+                    Welcome, {profile?.first_name || user.email}!
+                  </span>
+                  <Button variant="outline" onClick={handleDashboardNavigation}>
+                    Dashboard
+                  </Button>
+                  <Button variant="outline" onClick={signOut}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => openLogin('student')}>
+                    Student Login
+                  </Button>
+                  <Button onClick={() => openLogin('admin')}>
+                    Admin Login
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
